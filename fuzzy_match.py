@@ -33,7 +33,7 @@ conn = mysql.connector.connect(
     host="127.0.0.1",
     user="root",
     password="uplift_server",
-    database="dev_aics"
+    database="aicsakap_db"
 )
 
 

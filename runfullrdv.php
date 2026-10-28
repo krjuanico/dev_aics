@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['file'])) {
     $uploadFile = $uploadDir . $fileName;
 
     if (move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile)) {
-        "C:\\Users\\kajuanico\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe";
+        "C:\\Users\\CIS\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe";
         $scriptPath = "C:\\laragon\\www\\aicsakap_sys\\rdv.py";
 
         $command = escapeshellcmd("$pythonPath $scriptPath $uploadFile $fileName");

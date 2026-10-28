@@ -113,7 +113,7 @@ try {
 }
 
 // Run Python script
-$pythonPath = "C:\\Users\\kajuanico\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe";
+$pythonPath = "C:\\Users\\CIS\\AppData\\Local\\Microsoft\\WindowsApps\\python.exe";
 $scriptPath = "C:\\laragon\\www\\aicsakap_sys\\fuzzy_match.py";
 
 if (!function_exists('exec')) {

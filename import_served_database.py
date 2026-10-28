@@ -13,7 +13,7 @@ conn = mysql.connector.connect(
     host="127.0.0.1",
     user="root",
     password="password",
-    database="dev_aics"
+    database="aicsakap_db"
 )
 
 if conn.is_connected():
