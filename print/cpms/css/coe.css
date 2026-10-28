@@ -1,0 +1,82 @@
+.first{
+    padding-top: 1em;
+    text-indent: 92px;
+}
+.justify{
+    font-family: Arial, 'Times New Roman', Times, serif;
+    text-align: justify;
+}
+.indent{
+    text-indent: 10px;
+}
+input{
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid #000000;
+    -webkit-box-shadow: none;
+    box-shadow: none;
+    border-radius: 0;
+}
+input[type=checkbox] {
+    transform: scale(1.5);
+}
+.right{
+    position: flex;
+    float: right;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    background-color: #FAFAFA;
+    font: 12pt "Tahoma";
+}
+
+* {
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+.page {
+    width: 21cm;
+    min-height: 29.7cm;
+    padding: 2cm;
+    margin: 1cm auto;
+    border: 1px #D3D3D3 solid;
+    border-radius: 5px;
+    background: white;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+
+
+.subpage {
+    padding: 1cm;
+    border: 5px red solid;
+    height: 256mm;
+    outline: 2cm #FFEAEA solid;
+}
+
+@media print{
+    body {
+        -webkit-print-color-adjust: exact;
+    }
+    @page {
+        size: 8in 11in;
+        margin-left: 0.08in;
+        margin-right: 0.08in;
+    }
+    .no-print, .no-print *
+    {
+        display: none !important;
+    }
+    
+    table, figure, input, div, p {
+        page-break-inside: avoid;
+    }
+    .printable * {
+        display: block;
+        width: 100%;
+    }       
+    
+}

@@ -1,0 +1,6 @@
+[2026-10-28 01:32:26] ---- RDV started on PHP 8.2.27 ----
+[2026-10-28 01:32:26] CSV written: C:/laragon/www/aicsakap_sys/forrdv/rdv_20261028_013226_938.csv (1 rows)
+[2026-10-28 01:32:26] Deleted source rows from tbl_correction_details. Error: none
+[2026-10-28 01:32:26] Running: "C:\Users\kajuanico\AppData\Local\Microsoft\WindowsApps\python.exe" "C:\laragon\www\aicsakap_sys\fuzzy_match.py" "rdv_20261028_013226_938.csv" 2>&1
+[2026-10-28 01:32:29] Python exit code: 0
+[2026-10-28 01:32:29] Python output: {"status": "success", "master_list": 1, "clean_list": 1, "invalid_list": 0, "duplicate_list": 0, "served_list": 0}
