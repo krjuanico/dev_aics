@@ -2,7 +2,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "uplift_server";
-$database ="dev_aics";
+$database ="aicsakap_db";
 
 $conn = mysqli_connect($servername, $username, $password,$database);
 mysqli_set_charset($conn, "utf8");

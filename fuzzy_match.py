@@ -33,7 +33,7 @@ conn = mysql.connector.connect(
     host="127.0.0.1",
     user="root",
     password="uplift_server",
-    database="dev_aics"
+    database="aicsakap_db"
 )
 
 
@@ -171,11 +171,11 @@ column_mapping = {
     # Add more mappings as needed
 }
 
-def save_clean_list(row, control_number = ''):
+def save_clean_list(row, control_number = '', status = 'Correction'):
     if program == 'AICS':
 
         row['CONTROL NUMBER'] = control_number
-        row['STATUS'] = 'Correction'
+        row['STATUS'] = status
         values = [row[spreadsheet_column] for spreadsheet_column, database_column in column_mapping.items()]
         # if pd.isnull(values):
 
@@ -628,6 +628,10 @@ index = -1
 
 token_matching = []
 
+# Control numbers tagged as served during dedup -> details of the served record.
+# Used later to mark those people in the Raw List (master list).
+served_info = {}
+
 for row, (index2, row2) in zip(valid_recs[['FIRST NAME', 'MIDDLE NAME', 'LAST NAME', 'EXTENSION NAME', 'Full Name', 'Full Name 2', 'Full Name 3', 'File Source', 'Birthday', 'CONTROL NUMBER', 'BIRTH DAY', 'BIRTH MONTH', 'BIRTH YEAR']].to_numpy(), valid_recs.iterrows()):
     index += 1
     # print(index, row)
@@ -637,9 +641,24 @@ for row, (index2, row2) in zip(valid_recs[['FIRST NAME', 'MIDDLE NAME', 'LAST NA
     if usertype != 'grievance_officer':
         if not clean_list_df.empty:
             clean_match(index, row)
-        token_sort_match(row)
+        if token_sort_match(row):
+            served_info[str(row[9]).strip()] = token_matching[-1]
     else:
         match = token_sort_match(row)
+
+        # token_sort_match() just appended this person's served record
+        if match:
+            served_info[str(row[9]).strip()] = token_matching[-1]
+
+            # Save the Served status in aics_clean_list so the list shows it
+            cursor.execute("SELECT control_number FROM aics_clean_list WHERE control_number = %s;", (row[9],))
+            existing_rows = cursor.fetchall()
+
+            if len(existing_rows) > 0:
+                cursor.execute("UPDATE aics_clean_list SET status = %s WHERE control_number = %s;", ('Served', row[9]))
+                conn.commit()
+            else:
+                save_clean_list(row2.to_dict(), row[9], 'Already Served')
         
         if not match:
             query = """
@@ -691,6 +710,24 @@ clean_df.index = pd.RangeIndex(start=1, stop=len(clean_df) + 1)
 # clean_list_df = pd.concat([clean_list_df, clean_df], ignore_index=True)
 # clean_list_df.astype(str)
 
+# Mark people tagged as served during dedup in the master list (Raw List sheet).
+# Blank means the person was not tagged as served.
+def served_status_for(control_number):
+    return 'SERVED' if str(control_number).strip() in served_info else ''
+
+def served_date_for(control_number):
+    info = served_info.get(str(control_number).strip())
+    return str(info['Date last served']) if info else ''
+
+def served_match_for(control_number):
+    info = served_info.get(str(control_number).strip())
+    return info['On matching'].strip() if info else ''
+
+if not master_list.empty:
+    master_list['SERVED STATUS'] = master_list['CONTROL NUMBER'].apply(served_status_for)
+    master_list['DATE LAST SERVED'] = master_list['CONTROL NUMBER'].apply(served_date_for)
+    master_list['MATCHED SERVED RECORD'] = master_list['CONTROL NUMBER'].apply(served_match_for)
+
 file_sources = set(master_list['File Source'].to_numpy())
 
 now = datetime.now().strftime("%m-%d-%Y %H%M%S")
@@ -713,12 +750,52 @@ if not os.path.exists("spreadsheets/result"):
 if not os.path.exists("spreadsheets/clean"):
     os.makedirs("spreadsheets/clean")
 
+# Get the user's home folder. When PHP is launched under a different
+# environment (e.g. after a Laragon/PHP version change), '~' may not expand,
+# so fall back to USERPROFILE and then to a hard-coded path.
+home_dir = os.path.expanduser('~')
+if home_dir == '~' or not os.path.isdir(home_dir):
+    home_dir = os.environ.get('USERPROFILE') or r'C:\Users\kajuanico'
+
 # Get the Documents directory
-documents_path = os.path.join(os.path.expanduser('~'), 'Documents')
+documents_path = os.path.join(home_dir, 'Documents')
 
 # Ensure the directory exists
-if not os.path.exists(documents_path):
-    os.makedirs(documents_path)
+os.makedirs(documents_path, exist_ok=True)
+
+# Columns that exist only to help matching and are not wanted in the output
+helper_columns = ['Full Name', 'Full Name 2', 'Full Name 3']
+
+# Build the file name label from the LAST NAME column of the raw list.
+# One last name   -> "Juanico"
+# Several         -> "Juanico and 2 others"
+def make_name_label(raw_df):
+    if raw_df.empty or 'LAST NAME' not in raw_df.columns:
+        return 'request'
+
+    names = []
+    for value in raw_df['LAST NAME'].dropna().astype(str):
+        # Remove characters Windows does not allow in file names
+        value = ''.join(c for c in value if c not in '<>:"/\\|?*').strip()
+        if value and value not in names:
+            names.append(value)
+
+    if not names:
+        return 'request'
+    if len(names) == 1:
+        return names[0]
+    others = len(names) - 1
+    return f'{names[0]} and {others} other' + ('s' if others > 1 else '')
+
+# Return a path that does not overwrite an existing file:
+# "Juanico.xlsx", then "Juanico (2).xlsx", "Juanico (3).xlsx", ...
+def unique_path(folder, base_name, extension):
+    path = os.path.join(folder, base_name + extension)
+    counter = 2
+    while os.path.exists(path):
+        path = os.path.join(folder, f'{base_name} ({counter}){extension}')
+        counter += 1
+    return path
 
 for item in file_sources:
     master_df_file = master_list[master_list['File Source'] == item] if not master_list.empty else master_list
@@ -727,22 +804,42 @@ for item in file_sources:
     dup_df_file = fullname_list[fullname_list['File source 1'] == item] if not fullname_list.empty else fullname_list
     served_df_file = token_matching[token_matching['File source 1'] == item] if not token_matching.empty else token_matching
 
-    result_file_path = os.path.join(documents_path, f'Record verification for {item} {now}.xlsx')
+    # 'item' is a folder-style value such as "forrdv/". Each report type is
+    # filed in its own sub-folder of Documents, e.g.
+    #   Documents\Record verification for forrdv\
+    #   Documents\Clean List for forrdv\
+    #   Documents\No Match for forrdv\
+    item_label = str(item).strip('/\\ ').replace('/', '_').replace('\\', '_') or 'request'
+
+    result_dir = os.path.join(documents_path, f'Record verification for {item_label}')
+    clean_dir = os.path.join(documents_path, f'Clean List for {item_label}')
+    no_match_dir = os.path.join(documents_path, f'No Match for {item_label}')
+
+    # Create the sub-folders if they do not exist yet
+    os.makedirs(result_dir, exist_ok=True)
+    os.makedirs(clean_dir, exist_ok=True)
+    os.makedirs(no_match_dir, exist_ok=True)
+
+    # File names are based on the last name found in the raw list
+    name_label = make_name_label(master_df_file)
+    file_base = f'{name_label} {now}'   # e.g. "Juanico 11-18-2026 083449"
+
+    result_file_path = unique_path(result_dir, file_base, '.xlsx')
 
     with pd.ExcelWriter(result_file_path) as writer:
         master_df_file.to_excel(writer, sheet_name='Raw List', index=False)
 
-        clean_df_file.drop(columns=['Full Name', 'Full Name 2', 'Full Name 3'], inplace=True)
+        clean_df_file.drop(columns=helper_columns, inplace=True)
         clean_df_file.to_excel(writer, sheet_name='Clean', index=False)
 
         invalid_df_file.to_excel(writer, sheet_name='Invalid', index=False)
         dup_df_file.to_excel(writer, sheet_name='Duplicates', index=False)
         served_df_file.to_excel(writer, sheet_name='Served', index=False)
 
-    clean_file_path = os.path.join(documents_path, f'Clean List for {item} {now}.xlsx')
+    clean_file_path = unique_path(clean_dir, file_base, '.xlsx')
     clean_df_file.to_excel(clean_file_path, index=True)
 
-    no_match_file_path = os.path.join(documents_path, f'No Match for {item} {now}.csv')
+    no_match_file_path = unique_path(no_match_dir, file_base, '.csv')
     clean_df = clean_df[['CONTROL NUMBER', 'LAST NAME', 'FIRST NAME', 'MIDDLE NAME', 'EXTENSION NAME', 'Birthday', 'PROVINCE', 'CITY/MUNICIPALITY', 'BARANGAY', 'PUROK', 'AMOUNT', 'CHARGING', 'TYPE OF ASSISTANCE']]
     clean_df.to_csv(no_match_file_path, index=True)
 
