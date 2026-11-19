@@ -755,7 +755,7 @@ if not os.path.exists("spreadsheets/clean"):
 # so fall back to USERPROFILE and then to a hard-coded path.
 home_dir = os.path.expanduser('~')
 if home_dir == '~' or not os.path.isdir(home_dir):
-    home_dir = os.environ.get('USERPROFILE') or r'C:\Users\kajuanico'
+    home_dir = os.environ.get('USERPROFILE') or r'C:\Users\CIS'
 
 # Get the Documents directory
 documents_path = os.path.join(home_dir, 'Documents')

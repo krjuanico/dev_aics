@@ -1,55 +1,39 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Justification Letter</title>
+
 <link rel="stylesheet" href="cpms/css/coe.css">
 <link rel="stylesheet" type="text/css" href="cpms/css/bootstrap.min.css"> 
 
 <html>
     <body>
         <style>
-            @page {
-                size: A4;
-                margin: 20mm 15mm 5mm 15mm;            /* controls the printed page margin */
-            }
-            * { box-sizing: border-box; }
-
             .header{
                 background-color: black !important;
                 color: white;
-                -webkit-print-color-adjust: exact;
+                -webkit-print-color-adjust: exact; 
                 font-size: 12px;
             }
-            #gisv2_print input{ text-transform:uppercase; }
-
-            .letter-container {
-                width: 100%;
-                margin: 0 auto;          /* centered, no overflow */
-                padding: 20px 30px;
-                display: flex;
-                flex-direction: column;
+            #gisv2_print input{
+                text-transform:uppercase;
             }
-            .letter-header {
-                text-align: center;
-                font-size: 18px;
-                margin: 20px 0;
-            }
-            .letter-body {
-                font-size: 16px;
-                line-height: 1.6;
-            }
-            .letter-footer {
-                margin-top: auto;        /* pushes footer to the bottom */
-                text-align: center;
-                font-size: 11px;
-            }
-            .letter-top {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-            }
-            .letter-top p { margin: 0; text-align: center; font-family: arial, sans-serif; }
+        .letter-container {
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .letter-header {
+            text-align: center;
+            font-size: 18px;
+            margin-bottom: 20px;
+        }
+        .letter-body {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+        .letter-footer {
+            margin-top: 20px;
+            text-align: right;
+            font-size: 16px;
+        }
         </style>
 		<?php
 		ini_set('max_execution_time', 0);
@@ -103,41 +87,46 @@
 
 
 		?>
-<div class="letter-container">
-    <div class="letter-top">
-        <img src="cpms/images/logo.png" alt="DSWD" width="240" height="70">
-        <div style="color:#000; margin-top:40px">
-            <p style="font-size:25px; font-weight:bold;">CRISIS INTERVENTION SECTION</p>
-            <p style="font-size:17px;">Cor. Suazo St. R. Magsaysay Ave. Davao City</p>
-            <p style="font-size:14px;">DSWD-PMB-GF-13 | REV 03 | 14 MAY 2024</p>
+<div class="letter-container" style="margin: 20px;">
+    <div class="row" style="margin-top: 5%;">
+        <div class="col-6">
+            <img src="cpms/images/dswd_olog.png" alt="" width="230px" height="60px" style="margin-bottom: 10px;">
+            <img src="cpms/images/AICS.png" alt="" width="70px" height="60px" style="margin-left: 10px; margin-bottom: 10px;">
+            <img src="cpms/images/BP.png" alt="" width="70px" height="60px" style="margin-left: 10px; margin-bottom: 10px;">
+        </div>
+        <div class="col-6 ml-md-auto" style="color: #000000;">
+            <p class="text-center" style="font-size: 30px; font-family: arial, sans-serif; font-weight: bold; margin-top: 10px;">CRISIS INTERVENTION SECTION</p>
+            <p class="text-center" style="font-size: 17px; font-family: arial, sans-serif; margin-top: -20px;">Cor. Suazo St. R. Magsaysay Ave. Davao City</p>
+            <p class="text-center" style="font-size: 14px; font-family: arial, sans-serif; margin-top: -20px;">DSWD-PMB-GF-13 | REV 03 | 14 MAY 2024</p>
         </div>
     </div>
-
-    <div class="letter-header">
-        <h3 style="margin-top:40px"><b>JUSTIFICATION LETTER</b></h3>
+    <br><br><br><br>
+    <div class="letter-header" style="margin-top: 20px; margin-bottom: 20px;">
+        <h3 style="text-align: center;">Justification Letter</h3><br>
     </div>
-
-    <div class="letter-body">
-        <p style="text-align: justify; margin-top:40px">&emsp;&emsp;This is to justify that the client
-            <?php echo strtoupper($fname.' '.$mname.' '.$lname.' '.$ename);?>,
-            <?php echo $age;?> years old, residing at
-            <?php echo strtoupper($row['barangay'].', '.$row['city_municipality']);?>,
-            was interviewed and assessed by the undersigned and found eligible to receive Food Assistance due to difficulty in sustaining their daily basic needs.
+    <div style="margin: 20px 20px;">
+        <p>&emsp;&emsp;This is to justify that the client <?php echo strtoupper($fname.' '.$mname.' '.$lname.' '.$ename);?>, <?php echo $age;?> years old, residing at <?php echo strtoupper($row['barangay'].', '.$row['city_municipality']);?>, was interviewed and assessed by the undersigned and found eligible to receive Food Assistance due to difficulty in sustaining their daily basic needs.
             This justification is made to facilitate the provision of assistance through the Assistance to Individuals In Crisis Situation (AICS) Program, aimed at supporting individuals and families in vulnerable situations.
-            <br>Done this _____ day of ___________ 2025.
+<br>Done this _____ day of ___________ 2025.
         </p>
-
-        <div style="margin-top: 120px;">
-            <label>________________________________</label><br>
-            <label>DSWD Social Worker</label>
-        </div>
     </div>
-
-    <div class="letter-footer" style="margin-top:770px">
-        <div style="border-bottom:solid 1px black;"></div>
-        <b>PAGE 1 of 2</b><br>
-        DSWD Field Office XI, Ramon Magsaysay Avenue corner Damaso Suazo Street, Davao City, Philippines 8000<br>
-        Website: http://fo11.dswd.gov.ph Tel Nos.: (082) 227 1964 / (082) 227 8746 / (082) 227 1435 Telefax: (082) 226 2857
+    <br><br>
+    <div style="text-align: right; margin-right: 20px;">
+        <label>________________________________</label><br>
+        <label>DSWD Social Worker</label>&emsp;&emsp;
+    </div>
+    <br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+    <div class="footer row" style="margin-top: 50px;">
+        <div class="col-10">
+            <div style="border-bottom: solid 1px black; margin-bottom: 10px;"></div>
+            <p class="text-center">Page 1 of 1<br>
+                DSWD Field Office XI, Ramon Magsaysay Avenue corner Damaso Suazo Street, Davao City, Philippines 8000<br>
+                Website: http://fo11.dswd.gov.ph Tel Nos.: (082)_227 1964 / (082) 227 8746 / (082)_227 1435 Telefax: (082) 226 2857
+            </p>
+        </div>
+        <div class="col-2">
+            <img src="cpms/images/dswd-ISO.png" alt="" width="110px" height="60px" style="margin-left: 10px;">
+        </div>
     </div>
 </div>
 
